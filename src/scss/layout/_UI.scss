@@ -1,0 +1,67 @@
+@use 'base/variables' as v;
+@use 'base/mixins' as m;
+
+.contenedor-app {
+    @include m.tablet {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        min-height: 100vh;
+    }
+
+    .imagen {
+        height: 30rem;
+        background-image: url(../img/barber.jpeg);
+        background-size: cover;
+        background-position: center -18rem;
+        background-repeat: no-repeat;
+
+        @include m.tablet {
+            height: auto;
+            background-position: center bottom;
+
+        }
+    }
+
+    .app {
+        width: 100%;
+        margin: 0 auto;
+        padding: 3rem 0;
+        box-sizing: border-box;
+
+        @include m.tablet {
+            overflow: scroll;
+            overflow-x: hidden;
+            margin-right: 0;
+            padding-right: 1.5rem;
+            padding-left: 1.5rem;
+        }
+    }
+}
+
+.barra {
+    margin: v.$separacion 0;
+
+    @include m.tablet {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .boton {
+        @include m.boton(v.$negro, v.$blanco);
+        margin: 0;
+    }
+}
+
+.barra-servicios {
+    margin-bottom: v.$separacion;
+
+    @include m.tablet {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .boton {
+        margin: 0 0 1rem 0;
+    }
+}
