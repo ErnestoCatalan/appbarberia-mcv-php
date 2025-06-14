@@ -18,6 +18,7 @@ class Email {
     }
 
     public function enviarConfirmacion() {
+            var_dump($_ENV); // Temporalmente
             // Crear el objeto de email
             $mail = new PHPMailer(true);
             $mail->isSMTP();
