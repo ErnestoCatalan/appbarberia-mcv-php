@@ -32,3 +32,22 @@ function isAdmin() : void {
         header('Location: /');
     }
 }
+
+// Función que revisa que el usuario sea superadmin
+function isSuperAdmin() : void {
+    if(!isset($_SESSION['login']) || $_SESSION['tipo'] !== 'superadmin') {
+        header('Location: /');
+    }
+}
+
+// Función que revisa que el usuario sea admin de barbería
+function isAdminBarberia() : void {
+    if(!isset($_SESSION['login']) || ($_SESSION['tipo'] !== 'admin_barberia' && $_SESSION['tipo'] !== 'superadmin')) {
+        header('Location: /');
+    }
+}
+
+// Obtener ID de barbería del usuario actual
+function obtenerBarberiaId() {
+    return $_SESSION['barberia_id'] ?? null;
+}

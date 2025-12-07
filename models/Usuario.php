@@ -5,7 +5,7 @@ namespace Model;
 class Usuario extends ActiveRecord {
     // Base de datos
     protected static $tabla = 'usuarios';
-    protected static $columnasDB = ['id', 'nombre', 'apellido', 'email', 'password', 'telefono', 'admin', 'confirmado', 'token'];
+    protected static $columnasDB = ['id', 'nombre', 'apellido', 'email', 'password', 'telefono', 'admin', 'confirmado', 'token', 'tipo', 'barberia_id'];
 
     public $id;
     public $nombre;
@@ -16,6 +16,8 @@ class Usuario extends ActiveRecord {
     public $admin;
     public $confirmado;
     public $token;
+    public $tipo;
+    public $barberia_id;
 
     public function __construct($args = []) {
         $this->id = $args['id'] ?? null;
@@ -27,6 +29,8 @@ class Usuario extends ActiveRecord {
         $this->admin = $args['admin'] ?? '0';
         $this->confirmado = $args['confirmado'] ?? '0';
         $this->token = $args['token'] ?? '';
+        $this->tipo = $args['tipo'] ?? 'cliente';
+        $this->barberia_id = $args['barberia_id'] ?? null;
     }
 
     // Mensajes de validación para la creación de una cuenta
@@ -46,6 +50,10 @@ class Usuario extends ActiveRecord {
         }
         if(strlen($this->password) < 6) {
             self::$alertas['error'][] = 'El Password debe contener al menos 6 carecteres';
+        }
+        // Validar teléfono solo si no es vacío
+        if($this->telefono && strlen($this->telefono) !== 10) {
+            self::$alertas['error'][] = 'El teléfono debe tener 10 dígitos';
         }
 
         return self::$alertas;
@@ -95,6 +103,12 @@ class Usuario extends ActiveRecord {
         return $resultado;
     }
 
+    public function actualizarTipoYBarberia($tipo, $barberia_id = null) {
+        $this->tipo = $tipo;
+        $this->barberia_id = $barberia_id;
+        return $this->actualizar();
+    }   
+
     public function hashPassword() {
         $this->password = password_hash($this->password, PASSWORD_BCRYPT);
     }
@@ -112,5 +126,17 @@ class Usuario extends ActiveRecord {
         } else {
             return true;
         }
+    }
+
+    public function esSuperAdmin() {
+        return $this->tipo === 'superadmin';
+    }
+
+    public function esAdminBarberia() {
+        return $this->tipo === 'admin_barberia';
+    }
+
+    public function esCliente() {
+        return $this->tipo === 'cliente';
     }
 }

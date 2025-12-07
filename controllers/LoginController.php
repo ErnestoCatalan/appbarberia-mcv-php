@@ -10,22 +10,17 @@ use Model\Usuario;
 class LoginController {
     public static function login(Router $router) {
         $alertas = [];
-
         $auth = new Usuario;
 
         if($_SERVER['REQUEST_METHOD'] === 'POST') {
             $auth = new Usuario($_POST);
-
             $alertas = $auth->validarLogin();
 
             if(empty($alertas)) {
-                // Comprobar que exista el usuario
-                $usuario =Usuario::where('email', $auth->email);
+                $usuario = Usuario::where('email', $auth->email);
 
                 if($usuario) {
-                    // Verificar el password
                     if($usuario->comprobarPasswordAndVerificado($auth->password)) {
-                        // Autenticar el usuario
                         if (session_status() === PHP_SESSION_NONE) {
                             session_start();
                         }
@@ -33,29 +28,39 @@ class LoginController {
                         $_SESSION['nombre'] = $usuario->nombre . " " . $usuario->apellido;
                         $_SESSION['email'] = $usuario->email;
                         $_SESSION['login'] = true;
+                        $_SESSION['tipo'] = $usuario->tipo;
+                        $_SESSION['barberia_id'] = $usuario->barberia_id;
 
-                        // Redireccionamiento 
-                        if($usuario->admin === "1") {
-                            $_SESSION['admin'] = $usuario->admin ?? null;
+                        // Redireccionamiento con barbería específica si viene de reserva
+                        $redirect_barberia = $_POST['redirect_barberia'] ?? null;
 
-                            header('Location: /admin');
-                        } else {
-                            header('Location: /cita');
+                        if($usuario->esSuperAdmin()) {
+                        header('Location: /admin');
+                        }   elseif($usuario->esAdminBarberia()) {
+                            header('Location: /admin-barberia');
+                        }   else {
+                            if($redirect_barberia) {
+                                header('Location: /cita?barberia_id=' . $redirect_barberia);
+                            } else {
+                                header('Location: /');
+                            }
                         }
-                    }
-                } else {
-                    Usuario::setAlerta('error', 'Usuario no encontrado');
+                        exit;
                 }
+            } else {
+                Usuario::setAlerta('error', 'Usuario no encontrado');
             }
         }
+    }
 
         $alertas = Usuario::getAlertas();
-        
+    
         $router->render('auth/login', [
-            'alertas' => $alertas,
-            'auth' => $auth
-        ]);
-    }
+        'alertas' => $alertas,
+        'auth' => $auth
+    ]);
+}
+
 
     public static function logout() {
          if (session_status() === PHP_SESSION_NONE) {
