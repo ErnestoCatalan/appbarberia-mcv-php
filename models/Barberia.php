@@ -6,7 +6,7 @@ class Barberia extends ActiveRecord {
     protected static $columnasDB = [
         'id', 'nombre', 'direccion', 'telefono', 'email', 
         'descripcion', 'imagen', 'horario_apertura', 'horario_cierre',
-        'estado', 'usuario_id', 'creado_en', 'latitud', 'longitud' // Agregar estos
+        'estado', 'usuario_id', 'creado_en'
     ];
 
     public $id;
@@ -21,8 +21,6 @@ class Barberia extends ActiveRecord {
     public $estado;
     public $usuario_id;
     public $creado_en;
-    public $latitud;
-    public $longitud;
 
     public function __construct($args = []) {
         $this->id = $args['id'] ?? null;
@@ -37,8 +35,6 @@ class Barberia extends ActiveRecord {
         $this->estado = $args['estado'] ?? 'pendiente';
         $this->usuario_id = $args['usuario_id'] ?? null;
         $this->creado_en = $args['creado_en'] ?? '';
-        $this->latitud = $args['latitud'] ?? null;
-        $this->longitud = $args['longitud'] ?? null;
     }
 
     public function validar() {
