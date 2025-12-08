@@ -36,17 +36,31 @@ $barberiaDescripcion = $barberia->descripcion ?? '';
             <?php foreach($servicios as $servicio): ?>
                 <div class="servicio-card-cliente">
                     <?php 
-                    // Obtener la ruta completa del archivo - CORREGIDO
-                    $rutaImagen = __DIR__ . '/../../uploads/servicios/' . $servicio->imagen;
+                    // Obtener la ruta completa del archivo - USAR RUTA ABSOLUTA
+                    // Opción 1: Ruta absoluta de AlwaysData
+                    $rutaImagen = '/home/appbarberia/www/public/uploads/servicios/' . $servicio->imagen;
+                    
+                    // Opción 2: Usar $_SERVER['DOCUMENT_ROOT']
+                    // $rutaImagen = $_SERVER['DOCUMENT_ROOT'] . '/uploads/servicios/' . $servicio->imagen;
+                    
+                    // Opción 3: Debug para ver qué ruta está fallando
+                    error_log("Verificando imagen para servicio: " . $servicio->nombre);
+                    error_log("Nombre de imagen: " . $servicio->imagen);
+                    error_log("Ruta intentada: " . $rutaImagen);
+                    error_log("Existe archivo: " . (file_exists($rutaImagen) ? 'SÍ' : 'NO'));
+                    
                     if($servicio->imagen && file_exists($rutaImagen) && filesize($rutaImagen) > 0): ?>
                     <div class="servicio-imagen-cliente">
                         <img src="/uploads/servicios/<?php echo htmlspecialchars($servicio->imagen); ?>" 
                             alt="<?php echo htmlspecialchars($servicio->nombre ?? ''); ?>"
-                            onerror="this.onerror=null; this.src='/build/img/servicio-default.jpg'">
+                            onerror="console.error('Error cargando imagen:', this.src); this.src='/build/img/servicio-default.jpg'">
                     </div>
                     <?php else: ?>
                     <div class="servicio-imagen-cliente default">
                         <i class="fas fa-cut"></i>
+                        <p style="font-size: 0.8rem; margin-top: 5px; color: #999;">
+                            <?php echo htmlspecialchars($servicio->imagen); ?>
+                        </p>
                     </div>
                     <?php endif; ?>
                     
@@ -179,6 +193,7 @@ $barberiaDescripcion = $barberia->descripcion ?? '';
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-direction: column;
             
             i {
                 font-size: 4rem;
