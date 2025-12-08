@@ -89,12 +89,14 @@ class AdminBarberiaController {
         $consulta .= " WHERE fecha =  '{$fecha}' AND citas.barberia_id = '{$barberia_id}'";
 
         $citas = AdminCita::SQL($consulta);
+        $alertas = [];
 
         $router->render('admin-barberia/index', [
             'nombre' => $_SESSION['nombre'],
             'citas' => $citas,
             'fecha' => $fecha,
-            'barberia' => $barberia
+            'barberia' => $barberia,
+            'alertas' => $alertas
         ]);
     }
 

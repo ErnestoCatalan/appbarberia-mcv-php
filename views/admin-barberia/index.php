@@ -46,14 +46,6 @@ include_once __DIR__ . '/../templates/alerta_exito.php';
                 <i class="fas fa-save"></i> Guardar Dirección
             </button>
         </form>
-
-        <?php if($barberia->latitud && $barberia->longitud): ?>
-        <div class="mini-mapa-container">
-            <h4><i class="fas fa-map-pin"></i> Ubicación actual guardada:</h4>
-            <p class="direccion-actual"><?php echo htmlspecialchars($barberia->direccion); ?></p>
-            <div id="miniMapa" style="height: 300px; width: 100%; border-radius: 8px;"></div>
-        </div>
-        <?php endif; ?>
         
         <div class="info-detalles">
             <p><strong>Teléfono:</strong> <?php echo htmlspecialchars($barberia->telefono); ?></p>
