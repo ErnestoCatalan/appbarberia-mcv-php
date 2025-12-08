@@ -164,7 +164,7 @@ class ServicioController {
         $nombreUnico = md5(uniqid(rand(), true)) . '.' . $extension;
         
         // Directorio de uploads
-        $directorio = $_SERVER['DOCUMENT_ROOT'] . '/uploads/servicios/';
+        $ruta = '/home/appbarberia/www/public/uploads/servicios/' . $nombreImagen;
         
         // Crear directorio si no existe
         if (!file_exists($directorio)) {
@@ -292,7 +292,7 @@ class ServicioController {
 
     // Método para eliminar imagen
     private static function eliminarImagen($nombreImagen) {
-        $ruta = $_SERVER['DOCUMENT_ROOT'] . '/uploads/servicios/' . $nombreImagen;
+        $ruta = '/home/appbarberia/www/public/uploads/servicios/' . $nombreImagen;
         if(file_exists($ruta)) {
             return unlink($ruta);
         }
