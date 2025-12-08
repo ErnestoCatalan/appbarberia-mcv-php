@@ -161,26 +161,46 @@ class ServicioController {
     // Método para subir imagen
     private static function subirImagen($imagen) {
         $extension = strtolower(pathinfo($imagen['name'], PATHINFO_EXTENSION));
-        $nombreUnico = md5(uniqid(rand(), true)) . '.' . $extension;
+        $extensionesPermitidas = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         
-        // Directorio de uploads
-        $ruta = '/home/appbarberia/www/public/uploads/servicios/' . $nombreImagen;
+        if(!in_array($extension, $extensionesPermitidas)) {
+            error_log("Formato de imagen no permitido: " . $extension);
+            return null;
+        }
+        
+        // Verificar si se puede escribir en el directorio
+        $directorio = __DIR__ . '/../../public/uploads/servicios/';
         
         // Crear directorio si no existe
         if (!file_exists($directorio)) {
-            mkdir($directorio, 0775, true);
+            if (!mkdir($directorio, 0775, true)) {
+                error_log("No se pudo crear el directorio: " . $directorio);
+                return null;
+            }
+            error_log("Directorio creado: " . $directorio);
         }
         
+        // Verificar permisos de escritura
+        if (!is_writable($directorio)) {
+            error_log("Directorio no tiene permisos de escritura: " . $directorio);
+            return null;
+        }
+        
+        // Generar nombre único
+        $nombreUnico = md5(uniqid(rand(), true)) . '.' . $extension;
         $rutaDestino = $directorio . $nombreUnico;
         
-        if(move_uploaded_file($imagen['tmp_name'], $rutaDestino)) {
-            // Redimensionar imagen si es muy grande
-            self::optimizarImagen($rutaDestino, 800, 600);
-            return $nombreUnico;
-        }
+        error_log("Intentando subir imagen a: " . $rutaDestino);
+        error_log("Tamaño de imagen: " . $imagen['size']);
+        error_log("Error de subida: " . $imagen['error']);
         
-        error_log("Error al subir imagen: " . print_r($imagen, true));
-        return null;
+        if(move_uploaded_file($imagen['tmp_name'], $rutaDestino)) {
+            error_log("Imagen subida exitosamente: " . $rutaDestino);
+            return $nombreUnico;
+        } else {
+            error_log("Error al mover archivo. Permisos: " . decoct(fileperms($directorio)));
+            return null;
+        }
     }
 
     // Método para optimizar imagen (CORREGIDO)
@@ -292,7 +312,7 @@ class ServicioController {
 
     // Método para eliminar imagen
     private static function eliminarImagen($nombreImagen) {
-        $ruta = '/home/appbarberia/www/public/uploads/servicios/' . $nombreImagen;
+        $ruta = $_SERVER['DOCUMENT_ROOT'] . '/uploads/servicios/' . $nombreImagen;
         if(file_exists($ruta)) {
             return unlink($ruta);
         }

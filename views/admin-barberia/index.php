@@ -28,40 +28,24 @@ include_once __DIR__ . '/../templates/alerta_exito.php';
                 </p>
             </div>
             
-            <!-- Campos ocultos para coordenadas y dirección -->
-            <input type="hidden" id="latitud" name="latitud" value="<?php echo htmlspecialchars($barberia->latitud ?? ''); ?>">
-            <input type="hidden" id="longitud" name="longitud" value="<?php echo htmlspecialchars($barberia->longitud ?? ''); ?>">
-            <input type="hidden" id="direccion" name="direccion" value="<?php echo htmlspecialchars($barberia->direccion); ?>">
-            
-            <div class="coordenadas-info">
-                <p><strong>Coordenadas actuales:</strong> 
-                    <span id="coordenadasActuales">
-                        <?php if($barberia->latitud && $barberia->longitud): ?>
-                            Lat: <?php echo number_format($barberia->latitud, 6); ?>, Lng: <?php echo number_format($barberia->longitud, 6); ?>
-                        <?php else: ?>
-                            No definidas
-                        <?php endif; ?>
-                    </span>
-                </p>
-                <p id="direccionActual" style="margin-top: 0.5rem; color: rgba(255, 255, 255, 0.8);">
-                    <?php if($barberia->direccion): ?>
-                        <strong>Dirección:</strong> <?php echo htmlspecialchars($barberia->direccion); ?>
-                    <?php endif; ?>
-                </p>
+            <!-- Solo campo de dirección -->
+            <div class="campo direccion-campo">
+                <label for="direccion"><i class="fas fa-map-pin"></i> Dirección obtenida del mapa:</label>
+                <textarea 
+                    id="direccion" 
+                    name="direccion" 
+                    rows="3" 
+                    placeholder="La dirección se completará automáticamente al seleccionar en el mapa..."
+                    required
+                    readonly
+                ><?php echo htmlspecialchars($barberia->direccion); ?></textarea>
+                <p class="ayuda">Selecciona una ubicación en el mapa para completar automáticamente la dirección.</p>
             </div>
             
             <button type="submit" class="boton">
-                <i class="fas fa-save"></i> Guardar Dirección y Ubicación
+                <i class="fas fa-save"></i> Guardar Dirección
             </button>
         </form>
-        
-        <?php if($barberia->latitud && $barberia->longitud): ?>
-        <div class="mini-mapa-container">
-            <h4><i class="fas fa-map-pin"></i> Ubicación actual guardada:</h4>
-            <p class="direccion-actual"><?php echo htmlspecialchars($barberia->direccion); ?></p>
-            <div id="miniMapa" style="height: 300px; width: 100%; border-radius: 8px;"></div>
-        </div>
-        <?php endif; ?>
         
         <div class="info-detalles">
             <p><strong>Teléfono:</strong> <?php echo htmlspecialchars($barberia->telefono); ?></p>
@@ -158,8 +142,8 @@ $script = "
     let geocoderControl;
     
     // Coordenadas iniciales (México City como fallback)
-    const latInicial = " . ($barberia->latitud ?? '19.4326') . ";
-    const lngInicial = " . ($barberia->longitud ?? '-99.1332') . ";
+    const latInicial = 19.4326;
+    const lngInicial = -99.1332;
     
     function initMap() {
         // Inicializar mapa
@@ -180,49 +164,19 @@ $script = "
             const { center, name } = e.geocode;
             mapa.setView(center, 17);
             
-            // Actualizar campo de dirección oculto
+            // Actualizar campo de dirección
             document.getElementById('direccion').value = name;
             
             // Colocar marcador
             colocarMarcador(center.lat, center.lng);
-            
-            // Actualizar coordenadas y mostrar dirección
-            actualizarCoordenadas(center.lat, center.lng);
-            document.getElementById('direccionActual').innerHTML = '<strong>Dirección:</strong> ' + name;
         }).addTo(mapa);
         
-        // Si ya hay coordenadas, colocar marcador
-        if(latInicial && lngInicial) {
-            colocarMarcador(latInicial, lngInicial);
-        } else {
-            // Si no hay coordenadas, usar geolocalización
-            if(navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function(posicion) {
-                        const lat = posicion.coords.latitude;
-                        const lng = posicion.coords.longitude;
-                        
-                        mapa.setView([lat, lng], 15);
-                        colocarMarcador(lat, lng);
-                        actualizarCoordenadas(lat, lng);
-                        
-                        // Obtener dirección por coordenadas
-                        obtenerDireccionDesdeCoordenadas(lat, lng);
-                    },
-                    function(error) {
-                        console.log('Error geolocalización:', error);
-                        colocarMarcador(latInicial, lngInicial);
-                    }
-                );
-            } else {
-                colocarMarcador(latInicial, lngInicial);
-            }
-        }
+        // Colocar marcador inicial
+        colocarMarcador(latInicial, lngInicial);
         
         // Permitir agregar marcador al hacer clic en el mapa
         mapa.on('click', function(e) {
             colocarMarcador(e.latlng.lat, e.latlng.lng);
-            actualizarCoordenadas(e.latlng.lat, e.latlng.lng);
             
             // Obtener dirección por coordenadas
             obtenerDireccionDesdeCoordenadas(e.latlng.lat, e.latlng.lng);
@@ -243,21 +197,11 @@ $script = "
         // Evento cuando se arrastra el marcador
         marcador.on('dragend', function(e) {
             const posicion = marcador.getLatLng();
-            actualizarCoordenadas(posicion.lat, posicion.lng);
             obtenerDireccionDesdeCoordenadas(posicion.lat, posicion.lng);
         });
         
         // Mostrar popup
         marcador.bindPopup('Ubicación de tu barbería').openPopup();
-    }
-    
-    function actualizarCoordenadas(lat, lng) {
-        document.getElementById('latitud').value = lat;
-        document.getElementById('longitud').value = lng;
-        
-        // Actualizar display
-        document.getElementById('coordenadasActuales').textContent = 
-            'Lat: ' + lat.toFixed(6) + ', Lng: ' + lng.toFixed(6);
     }
     
     function obtenerDireccionDesdeCoordenadas(lat, lng) {
@@ -267,10 +211,14 @@ $script = "
             .then(data => {
                 if(data.display_name) {
                     document.getElementById('direccion').value = data.display_name;
-                    document.getElementById('direccionActual').innerHTML = '<strong>Dirección:</strong> ' + data.display_name;
+                } else {
+                    document.getElementById('direccion').value = `Lat: \${lat.toFixed(6)}, Lng: \${lng.toFixed(6)}`;
                 }
             })
-            .catch(error => console.log('Error obteniendo dirección:', error));
+            .catch(error => {
+                console.log('Error obteniendo dirección:', error);
+                document.getElementById('direccion').value = `Lat: \${lat.toFixed(6)}, Lng: \${lng.toFixed(6)}`;
+            });
     }
     
     function usarMiUbicacion() {
@@ -282,7 +230,6 @@ $script = "
                     
                     mapa.setView([lat, lng], 17);
                     colocarMarcador(lat, lng);
-                    actualizarCoordenadas(lat, lng);
                     obtenerDireccionDesdeCoordenadas(lat, lng);
                 },
                 function(error) {
@@ -297,18 +244,10 @@ $script = "
     // Validar formulario
     document.getElementById('formDireccion').addEventListener('submit', function(e) {
         const direccion = document.getElementById('direccion').value.trim();
-        const latitud = document.getElementById('latitud').value;
-        const longitud = document.getElementById('longitud').value;
         
         if(!direccion) {
             e.preventDefault();
             alert('Por favor, selecciona la ubicación de tu barbería en el mapa');
-            return false;
-        }
-        
-        if(!latitud || !longitud) {
-            e.preventDefault();
-            alert('Por favor, selecciona la ubicación exacta en el mapa');
             return false;
         }
         
@@ -317,33 +256,5 @@ $script = "
     
     // Inicializar mapa cuando se cargue la página
     document.addEventListener('DOMContentLoaded', initMap);
-    
-    // Mini mapa para mostrar ubicación guardada
-    document.addEventListener('DOMContentLoaded', function() {
-        const lat = " . ($barberia->latitud ?? '0') . ";
-        const lng = " . ($barberia->longitud ?? '0') . ";
-        
-        if(lat && lng && lat != 0 && lng != 0) {
-            const miniMapa = L.map('miniMapa').setView([lat, lng], 16);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap',
-                maxZoom: 19
-            }).addTo(miniMapa);
-            
-            L.marker([lat, lng]).addTo(miniMapa)
-                .bindPopup('" . htmlspecialchars(addslashes($barberia->nombre)) . "')
-                .openPopup();
-            
-            // Agregar círculo para resaltar
-            L.circle([lat, lng], {
-                color: '#0da6f3',
-                fillColor: '#0da6f3',
-                fillOpacity: 0.2,
-                radius: 50
-            }).addTo(miniMapa);
-        }
-    });
 </script>
 ";
-?>

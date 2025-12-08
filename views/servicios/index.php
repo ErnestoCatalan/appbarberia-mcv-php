@@ -18,11 +18,14 @@
         <div class="servicios-grid">
             <?php foreach($servicios as $servicio): ?>
                 <div class="servicio-card">
-                    <?php if($servicio->imagen): ?>
+                    <?php 
+                    // Obtener la ruta completa del archivo - CORREGIDO
+                    $rutaImagen = '/home/appbarberia/www/public/uploads/servicios/' . $servicio->imagen;
+                    if($servicio->imagen && file_exists($rutaImagen) && filesize($rutaImagen) > 0): ?>
                     <div class="servicio-imagen">
                         <img src="/uploads/servicios/<?php echo htmlspecialchars($servicio->imagen); ?>" 
-                             alt="<?php echo htmlspecialchars($servicio->nombre); ?>"
-                             onerror="this.src='/build/img/servicio-default.jpg'">
+                            alt="<?php echo htmlspecialchars($servicio->nombre); ?>"
+                            onerror="this.onerror=null; this.src='/build/img/servicio-default.jpg'">
                     </div>
                     <?php else: ?>
                     <div class="servicio-imagen default">
@@ -110,36 +113,4 @@ window.onclick = function(event) {
         cerrarModalEliminar();
     }
 }
-
-// Confirmar si se abandona la página con cambios
-window.addEventListener('beforeunload', function(e) {
-    const formularios = document.querySelectorAll('form');
-    let tieneCambios = false;
-    
-    formularios.forEach(form => {
-        if (form.classList.contains('dirty')) {
-            tieneCambios = true;
-        }
-    });
-    
-    if (tieneCambios) {
-        e.preventDefault();
-        e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de salir?';
-    }
-});
-
-// Marcar formularios como "sucios" cuando se modifican
-document.addEventListener('DOMContentLoaded', function() {
-    const inputs = document.querySelectorAll('input, textarea, select');
-    
-    inputs.forEach(input => {
-        input.addEventListener('change', function() {
-            const form = this.closest('form');
-            if (form) {
-                form.classList.add('dirty');
-            }
-        });
-    });
-});
 </script>
-
