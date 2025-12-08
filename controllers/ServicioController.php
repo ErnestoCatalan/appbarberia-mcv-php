@@ -168,8 +168,8 @@ class ServicioController {
             return null;
         }
         
-        // Verificar si se puede escribir en el directorio
-        $directorio = __DIR__ . '/../../public/uploads/servicios/';
+        // Usar la ruta ABSOLUTA de AlwaysData
+        $directorio = '/home/appbarberia/www/public/uploads/servicios/';
         
         // Crear directorio si no existe
         if (!file_exists($directorio)) {
@@ -312,7 +312,7 @@ class ServicioController {
 
     // Método para eliminar imagen
     private static function eliminarImagen($nombreImagen) {
-        $ruta = $_SERVER['DOCUMENT_ROOT'] . '/uploads/servicios/' . $nombreImagen;
+        $ruta = '/home/appbarberia/www/public/uploads/servicios/' . $nombreImagen;
         if(file_exists($ruta)) {
             return unlink($ruta);
         }

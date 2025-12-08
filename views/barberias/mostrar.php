@@ -37,7 +37,7 @@ $barberiaDescripcion = $barberia->descripcion ?? '';
                 <div class="servicio-card-cliente">
                     <?php 
                     // Obtener la ruta completa del archivo - CORREGIDO
-                    $rutaImagen = '/home/appbarberia/www/public/uploads/servicios/' . $servicio->imagen;
+                    $rutaImagen = __DIR__ . '/../../uploads/servicios/' . $servicio->imagen;
                     if($servicio->imagen && file_exists($rutaImagen) && filesize($rutaImagen) > 0): ?>
                     <div class="servicio-imagen-cliente">
                         <img src="/uploads/servicios/<?php echo htmlspecialchars($servicio->imagen); ?>" 
