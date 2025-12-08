@@ -35,14 +35,11 @@ $barberiaDescripcion = $barberia->descripcion ?? '';
         <div class="servicios-grid-cliente">
             <?php foreach($servicios as $servicio): ?>
                 <div class="servicio-card-cliente">
-                    <?php 
-                    // Obtener la ruta completa del archivo - CORREGIDO
-                    $rutaImagen = '/home/appbarberia/www/public/uploads/servicios/' . $servicio->imagen;
-                    if($servicio->imagen && file_exists($rutaImagen) && filesize($rutaImagen) > 0): ?>
+                    <?php if(!empty($servicio->imagen)): ?>
                     <div class="servicio-imagen-cliente">
                         <img src="/uploads/servicios/<?php echo htmlspecialchars($servicio->imagen); ?>" 
-                            alt="<?php echo htmlspecialchars($servicio->nombre ?? ''); ?>"
-                            onerror="this.onerror=null; this.src='/build/img/servicio-default.jpg'">
+                             alt="<?php echo htmlspecialchars($servicio->nombre ?? ''); ?>"
+                             onerror="this.src='/build/img/servicio-default.jpg'">
                     </div>
                     <?php else: ?>
                     <div class="servicio-imagen-cliente default">
@@ -76,6 +73,7 @@ $barberiaDescripcion = $barberia->descripcion ?? '';
         </a>
     </div>
 </div>
+
 
 <style>
 .barberia-detalle {
