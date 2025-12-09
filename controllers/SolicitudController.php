@@ -72,18 +72,19 @@ class SolicitudController {
             $solicitud = SolicitudRegistro::find($id);
 
             if($solicitud && $solicitud->estado === 'pendiente') {
-                // 1. Crear la barbería con el horario proporcionado
+                // 1. Crear la barbería con SOLO las columnas que existen
                 $barberia = new Barberia([
                     'nombre' => $solicitud->nombre_barberia,
                     'direccion' => $solicitud->direccion,
                     'telefono' => $solicitud->telefono,
                     'email' => $solicitud->email,
-                    'descripcion' => '',
-                    'imagen' => '',
-                    'horario_apertura' => $solicitud->horario_apertura, // Usar horario del formulario
-                    'horario_cierre' => $solicitud->horario_cierre, // Usar horario del formulario
+                    'descripcion' => '', // Valor por defecto
+                    'imagen' => '', // Valor por defecto
+                    'horario_apertura' => '09:00:00',
+                    'horario_cierre' => '19:00:00',
                     'estado' => 'aprobada',
                     'usuario_id' => $solicitud->usuario_id
+                    // NO incluir 'latitud' ni 'longitud' si no existen
                 ]);
                 
                 $resultadoBarberia = $barberia->guardar();
@@ -94,7 +95,7 @@ class SolicitudController {
                     
                     if($usuario) {
                         $usuario->tipo = 'admin_barberia';
-                        $usuario->barberia_id = $resultadoBarberia['id'];
+                        $usuario->barberia_id = $resultadoBarberia['id']; // Usar el ID de la barbería recién creada
                         
                         $resultadoUsuario = $usuario->actualizar();
                         
@@ -110,14 +111,16 @@ class SolicitudController {
                             $_SESSION['exito'] = 'Solicitud aprobada correctamente y barbero notificado';
                         } else {
                             $_SESSION['error'] = 'Error al actualizar el usuario';
+                            // Si hay error, eliminar la barbería creada
                             $barberia->eliminar();
                         }
                     } else {
                         $_SESSION['error'] = 'Usuario no encontrado';
+                        // Si no encuentra usuario, eliminar la barbería creada
                         $barberia->eliminar();
                     }
                 } else {
-                    $_SESSION['error'] = 'Error al crear la barbería: ' . ($resultadoBarberia['error'] ?? 'Error desconocido');
+                    $_SESSION['error'] = 'Error al crear la barbería: ' . $resultadoBarberia['error'] ?? 'Error desconocido';
                 }
             } else {
                 $_SESSION['error'] = 'Solicitud no encontrada o ya procesada';
