@@ -19,6 +19,8 @@
             <?php foreach($servicios as $servicio): ?>
                 <div class="servicio-card">
                     <?php 
+                    // Obtener la ruta completa del archivo - CORREGIDO
+                    $rutaImagen = '/home/appbarberia/www/public/uploads/servicios/' . $servicio->imagen;
                     if($servicio->imagen && file_exists($rutaImagen) && filesize($rutaImagen) > 0): ?>
                     <div class="servicio-imagen">
                         <img src="/uploads/servicios/<?php echo htmlspecialchars($servicio->imagen); ?>" 
