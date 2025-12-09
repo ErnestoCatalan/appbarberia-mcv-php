@@ -135,6 +135,62 @@ class Email {
         }
     }
 
+    // Enviar confirmación de cita al cliente
+    public function enviarConfirmacionCita($fecha, $hora, $servicios, $total, $nombreBarberia) {
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = $_ENV['EMAIL_HOST'];
+            $mail->SMTPAuth = true;
+            $mail->Username = $_ENV['EMAIL_USER'];
+            $mail->Password = $_ENV['EMAIL_PASS'];
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = $_ENV['EMAIL_PORT'];
+            
+            $mail->setFrom($_ENV['EMAIL_FROM_EMAIL'], $_ENV['EMAIL_FROM_NAME']);
+            $mail->addAddress($this->email, $this->nombre);
+            $mail->Subject = 'Confirmación de cita - ' . $nombreBarberia;
+
+            $mail->isHTML(true);
+            $mail->CharSet = 'UTF-8';
+
+            $contenido = "<html>";
+            $contenido .= "<p><strong>Hola " . $this->nombre . "</strong>,</p>";
+            $contenido .= "<p>Tu cita ha sido confirmada exitosamente.</p>";
+            $contenido .= "<hr>";
+            $contenido .= "<h3>Resumen de tu cita:</h3>";
+            $contenido .= "<ul>";
+            $contenido .= "<li><strong>Barbería:</strong> " . $nombreBarberia . "</li>";
+            $contenido .= "<li><strong>Fecha:</strong> " . date('d/m/Y', strtotime($fecha)) . "</li>";
+            $contenido .= "<li><strong>Hora:</strong> " . date('h:i A', strtotime($hora)) . "</li>";
+            $contenido .= "<li><strong>Servicios:</strong> " . $servicios . "</li>";
+            $contenido .= "<li><strong>Total:</strong> $" . number_format($total, 2) . "</li>";
+            $contenido .= "</ul>";
+            $contenido .= "<hr>";
+            $contenido .= "<p><strong>📌 Instrucciones importantes:</strong></p>";
+            $contenido .= "<ul>";
+            $contenido .= "<li>Llega 10 minutos antes de tu cita</li>";
+            $contenido .= "<li>Trae tu identificación</li>";
+            $contenido .= "<li>Si necesitas cancelar o reagendar, hazlo con al menos 24 horas de anticipación</li>";
+            $contenido .= "</ul>";
+            $contenido .= "<p>Puedes ver tus citas en cualquier momento desde tu cuenta:</p>";
+            $contenido .= "<p><a href='" . $_ENV['APP_URL'] . "/cita' style='background-color: #d4af37; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;'>Ver Mis Citas</a></p>";
+            $contenido .= "<p>¡Te esperamos!</p>";
+            $contenido .= "</html>";
+            
+            $mail->Body = $contenido;
+            $mail->AltBody = strip_tags($contenido);
+
+            $mail->send();
+            error_log("Email de confirmación enviado a cliente: " . $this->email);
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Error al enviar email de confirmación de cita: " . $mail->ErrorInfo);
+            return false;
+        }
+    }
+
     // Enviar notificación de rechazo de barbería
     public function enviarRechazoBarberia($motivo = '') {
         $mail = new PHPMailer(true);

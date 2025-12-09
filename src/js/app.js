@@ -404,13 +404,8 @@ async function reservarCita() {
     const datos = new FormData();
     datos.append('fecha', fecha);
     datos.append('hora', hora);
-    // NO enviar usuarioId - se obtendrá de la sesión en el servidor
     datos.append('servicios', idServicios.join(','));
     datos.append('barberia_id', barberia_id);
-
-    console.log('Enviando datos para crear cita:', {
-        fecha, hora, servicios: idServicios, barberia_id
-    });
 
     try {
         const url = `${location.origin}/api/citas`;
@@ -419,34 +414,39 @@ async function reservarCita() {
             body: datos
         });
 
-        // Obtener el texto de la respuesta primero
-        const responseText = await respuesta.text();
-        console.log('Respuesta del servidor (raw):', responseText.substring(0, 500));
-
-        // Intentar parsear como JSON
-        let resultado;
-        try {
-            resultado = JSON.parse(responseText);
-        } catch (parseError) {
-            console.error('Error parseando JSON:', parseError);
-            console.error('Respuesta completa:', responseText);
-            
-            // Si la respuesta no es JSON válido pero la cita se creó (código 200)
-            if (respuesta.ok) {
-                // Asumir éxito y redirigir
-                await mostrarExitoYCargarCitas();
-                return;
-            }
-            
-            throw new Error('El servidor devolvió una respuesta no válida. Verifica los logs.');
-        }
-
-        console.log('Respuesta del servidor (parsed):', resultado);
+        const resultado = await respuesta.json();
         
         if (resultado.resultado) {
-            await mostrarExitoYCargarCitas();
+            // Mostrar mensaje de éxito y redirigir
+            await Swal.fire({
+                icon: "success",
+                title: "¡Cita Agendada!",
+                html: `
+                    <p>Tu cita ha sido agendada exitosamente.</p>
+                    <p><strong>Fecha:</strong> ${fecha}</p>
+                    <p><strong>Hora:</strong> ${hora}</p>
+                    <p><strong>Servicios:</strong> ${servicios.map(s => s.nombre).join(', ')}</p>
+                    <p>Recibirás un correo de confirmación.</p>
+                `,
+                confirmButtonText: 'Ver Mis Citas',
+                showCancelButton: true,
+                cancelButtonText: 'Agendar Otra Cita'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/cita?exito=1';
+                } else {
+                    // Recargar para nueva cita
+                    window.location.reload();
+                }
+            });
         } else {
-            throw new Error(resultado.error || 'Error al crear cita');
+            // Mostrar error específico
+            Swal.fire({
+                icon: "error",
+                title: "Error al Agendar",
+                text: resultado.error || "No se pudo agendar la cita. Intenta nuevamente.",
+                confirmButtonText: 'Entendido'
+            });
         }
 
     } catch (error) {

@@ -5,7 +5,8 @@ class SolicitudRegistro extends ActiveRecord {
     protected static $tabla = 'solicitudes_registro';
     protected static $columnasDB = [
         'id', 'nombre_barberia', 'direccion', 'telefono', 
-        'email', 'nombre_propietario', 'documentos', 
+        'email', 'nombre_propietario', 'documentos',
+        'horario_apertura', 'horario_cierre', 
         'estado', 'usuario_id', 'creado_en'
     ];
 
@@ -16,6 +17,8 @@ class SolicitudRegistro extends ActiveRecord {
     public $email;
     public $nombre_propietario;
     public $documentos;
+    public $horario_apertura; 
+    public $horario_cierre; 
     public $estado;
     public $usuario_id;
     public $creado_en;
@@ -28,6 +31,8 @@ class SolicitudRegistro extends ActiveRecord {
         $this->email = $args['email'] ?? '';
         $this->nombre_propietario = $args['nombre_propietario'] ?? '';
         $this->documentos = $args['documentos'] ?? '';
+        $this->horario_apertura = $args['horario_apertura'] ?? '09:00:00'; 
+        $this->horario_cierre = $args['horario_cierre'] ?? '19:00:00'; 
         $this->estado = $args['estado'] ?? 'pendiente';
         $this->usuario_id = $args['usuario_id'] ?? null;
         $this->creado_en = $args['creado_en'] ?? date('Y-m-d H:i:s');
@@ -49,6 +54,23 @@ class SolicitudRegistro extends ActiveRecord {
         if(!$this->nombre_propietario) {
             self::$alertas['error'][] = 'El nombre del propietario es obligatorio';
         }
+        
+        // Validar horarios
+        if($this->horario_apertura && $this->horario_cierre) {
+            $horaApertura = strtotime($this->horario_apertura);
+            $horaCierre = strtotime($this->horario_cierre);
+            
+            if($horaCierre <= $horaApertura) {
+                self::$alertas['error'][] = 'La hora de cierre debe ser posterior a la hora de apertura';
+            }
+            
+            // Validar que haya al menos 8 horas de diferencia
+            $diferencia = ($horaCierre - $horaApertura) / 3600; // Convertir a horas
+            if($diferencia < 8) {
+                self::$alertas['error'][] = 'El horario de atención debe ser de al menos 8 horas';
+            }
+        }
+        
         return self::$alertas;
     }
 
